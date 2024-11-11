@@ -25,5 +25,5 @@
 
 ## Визуализация контекста системы
 @startuml
-!include docs/C4_Component.puml
+User -- Membership
 @enduml
