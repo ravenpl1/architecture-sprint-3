@@ -1,0 +1,97 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Smart Home Container Diagram
+
+top to bottom direction
+
+Person(user, "User", "Пользователь Smart Home")
+System(SmartHomeSystem, "Система Smart Home")
+
+Container_Boundary(SmartHomeSystem, "Smart Home System") {
+  Container(UI, "SmartHome UI", "React", "Фронтенд-приложение")
+  Container(APIGateway, "API Gateway", "Kong", "API-шлюз")
+  Container(UserManagment, "User Managment Application", "Java, Spring Boot", "Авторизация и управления пользователями")
+  Container(DeviceManagement, "Device Management Application", "Java, Spring Boot", "Конфигурирование устройств")
+  Container(DeviceControl, "Device Control Application", "Java, Spring Boot", "Управление устройствами")
+  Container(DataCollector, "DataCollector Application", "Java, Spring Boot", "Коллектор сбора данных с датчиков")
+  ContainerDb(UserManagmentDb, "Database User Managment", "PostgreSQL", "База данных сервиса авторизация и управления пользователями")
+  ContainerDb(DeviceManagementDb, "Database Device Management", "PostgreSQL", "База данных конфигурации устройств")
+  ContainerDb(DatabaseTelemetry, "Database Telemetry", "ClickHouse", "База данных телеметрии")
+  ContainerQueue(EventBus, "Event bus", "Apache Kafka", "Шина данных событий")
+  ContainerQueue(DataBus, "Sensor data bus", "NATS", "Шина данных датчиков")
+}
+
+Container(APIGateway, "API Gateway") {
+  Component(APIGatewayRouter, "Router", "Маршрутизация")
+  Component(APIGatewayBalancing, "Balancing", "Балансировка")
+  Component(APIGatewayAuthentication, "Authentication", "Аутентификация")
+}
+
+Container(UserManagment, "User Managment Application") {
+  Component(UserManagmentWebController, "UserManagment Web-API", "Infrastructure Layer/Controllers")
+  Component(UserManagmentApplicationCore, "UserManagment Application Core", "Application Layer/Services-Domain")
+  Component(UserManagmentRepositoryDb, "UserManagment DB Repository", "Infrastructure Layer/Persistence")
+}
+
+Container(DeviceManagement, "Device Management Application") {
+  Component(DeviceManagementWebController, "DeviceManagement Web-API", "Infrastructure Layer/Controllers")
+  Component(DeviceManagementApplicationCore, "DeviceManagement Application Core", "Application Layer/Services-Domain")
+  Component(DeviceManagementDomainEventsBus, "DeviceManagement Domain Events", "Infrastructure Layer/DomainEventBus")
+  Component(DeviceManagementRepositoryDb, "DeviceManagement DB Repository", "Infrastructure Layer/Persistence")
+}
+
+Container(DeviceControl, "Device Control Application") {
+  Component(DeviceControlWebController, "DeviceControl Web-API", "Infrastructure Layer/Controllers")
+  Component(DeviceControlApplicationCore, "DeviceControl Application Core", "Application Layer/Services-Domain")
+  Component(DeviceControlDomainEventsBus, "DeviceControl Domain Events", "Infrastructure Layer/DomainEventBus")
+}
+
+Container(DataCollector, "DataCollector Application") {
+  Component(DataCollectorWebController, "DataCollector Web-API", "Infrastructure Layer/Controllers")
+  Component(DataCollectorApplicationCore, "DataCollector Application Core", "Application Layer/Services-Domain")
+  Component(DataCollectorRepositoryDb, "DataCollector Repository", "Infrastructure Layer/Persistence")
+  Component(DataCollectorDomainEventsBus, "DataCollector Domain Events", "Infrastructure Layer/DomainEventBus")
+  Component(DataCollectorDataBusTelemetry, "DataCollector DataBus Telemetry", "Infrastructure Layer/DataBus")
+}
+
+System_Ext(devices, "Devices", "Внешние устройства")
+System_Ext(sensors, "Sensors", "Внешние датчики")
+
+Rel(user, UI, "Использует фронтенд-приложение для взаимодействия с системой")
+
+Rel(UI, APIGateway, "Через шлюз использует микросервисы для получения данных")
+
+Rel(APIGatewayRouter, UserManagmentWebController, "Авторизация и управление пользователями")
+Rel(APIGatewayRouter, DeviceManagementWebController, "Управление конфигурациями устройств")
+Rel(APIGatewayRouter, DeviceControlWebController, "Управление и контроль устройств")
+Rel(APIGatewayRouter, DataCollectorWebController, "Мониторинг датчиков")
+
+Rel(UserManagmentWebController, UserManagmentApplicationCore, "CQRS")
+Rel(UserManagmentApplicationCore, UserManagmentRepositoryDb, "Чтение/запись агрегатов, сущностей, объектов значений")
+Rel(UserManagmentRepositoryDb, UserManagmentDb, "Чтение/запись агрегатов, сущностей, объектов значений")
+
+Rel(DeviceManagementWebController, DeviceManagementApplicationCore, "CQRS")
+Rel(DeviceManagementApplicationCore, DeviceManagementRepositoryDb, "Чтение/запись агрегатов, сущностей, объектов значений")
+Rel(DeviceManagementApplicationCore, DeviceManagementDomainEventsBus, "Отправка доменных событий")
+Rel(DeviceManagementApplicationCore, DeviceManagementDomainEventsBus, "Получение доменных событий <<DeviceControlApplication>>")
+Rel(DeviceManagementRepositoryDb, DeviceManagementDb, "Чтение/запись агрегатов, сущностей, объектов значений")
+Rel(DeviceManagementDomainEventsBus, EventBus, "Публикация/подписка на доменные события")
+
+Rel(DeviceControlWebController, DeviceControlApplicationCore, "CQRS")
+Rel(DeviceControlApplicationCore, DeviceControlDomainEventsBus, "Получение доменных событий <<DeviceManagement>> и <<DataCollector>>")
+Rel(DeviceControlDomainEventsBus, EventBus, "Публикация/подписка на доменные события")
+
+Rel(DataCollectorWebController, DataCollectorApplicationCore, "CQRS")
+Rel(DataCollectorApplicationCore, DataCollectorRepositoryDb, "Чтение/запись данных телеметрии")
+Rel(DataCollectorApplicationCore, DataCollectorDomainEventsBus, "Отправка доменных событий")
+Rel(DataCollectorApplicationCore, DataCollectorDataBusTelemetry, "Получение данных телеметрии")
+Rel(DataCollectorRepositoryDb, DatabaseTelemetry, "Чтение/запись данных телеметрии")
+Rel(DataCollectorDomainEventsBus, EventBus, "Публикация/подписка на доменные события")
+Rel(DataCollectorDataBusTelemetry, DataBus, "Push-подписка на данные телеметрии")
+
+Rel_D(DataBus, DataCollectorDataBusTelemetry, "Push данных телеметрии")
+Rel_D(devices, EventBus, "Подписка на события управления и обновление конфигурации")
+Rel_D(sensors, DataBus, "Отправка данных телеметрии")
+@enduml
