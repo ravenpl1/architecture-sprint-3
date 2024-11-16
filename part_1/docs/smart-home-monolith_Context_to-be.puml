@@ -1,0 +1,19 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Smart Home to-be Context Diagram
+
+top to bottom direction
+
+Person(user, "User", "Пользователь системы Smart Home")
+System(SmartHome_system, "Система управления умным домом Smart Home", "Java, Spring Boot")
+
+System_Ext(devices, "Devices", "Устройство управления")
+System_Ext(sensors, "Sensors", "Датчики")
+
+Rel(user, SmartHome_system, "Взаимодействие с системой")
+Rel(devices, SmartHome_system, "Отправка состояния(включая телеметрию)")
+Rel(sensors, SmartHome_system, "Отправка телеметрии")
+Rel(SmartHome_system, devices, "Команды управления")
+
+@enduml

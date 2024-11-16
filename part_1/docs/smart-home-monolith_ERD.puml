@@ -1,0 +1,83 @@
+@startuml
+skinparam linetype ortho
+
+entity "User" as user {
+  *user_id : uuid <<generated>>
+  --
+  *home_id : uuid <<FK>>
+  *name : String
+  email : String
+  role : String
+}
+
+entity "Home" as home {
+  *home_id : uuid <<generated>>
+  --
+  address : String
+  name : String
+}
+
+entity "Device" as device {
+  *device_id : uuid <<generated>>
+  --
+  *home_id : uuid <<FK>>
+  *device_config_id : uuid <<FK>>
+  model : String
+}
+
+entity "DeviceConfiguration" as deviceconfig {
+  *device_config_id : uuid <<generated>>
+  --
+  sensor_id : uuid[]
+  type_name : String
+  parameters : String
+  expression_control : String
+}
+
+entity "Sensor" as sensor {
+  *sensor_id : uuid <<generated>>
+  --
+  *home_id : uuid <<FK>>
+  name : String
+  unit_measure : String
+  data_reference: String
+  sensorvalue_snapshot : SensorValueObject
+  sensorvalues : SensorValueObject[]
+}
+
+object "SensorValueObject" as sensorvalue {
+  timestamp: Datetime
+  value: Float
+  quality: String
+}
+
+entity "DeviceControl" as devicectrl {
+  *devicectrl_id : uuid <<generated>>
+  --
+  *device_id : uuid <<FK>>
+  sensor_id : uuid <<FK>>
+  user_id : uuid <<FK>>
+  current_status : String
+  change_status : String
+}
+
+'user and home relationship
+user }o..|| home
+
+'device relationships
+device --|| home
+device --|| deviceconfig
+
+'device configuration relationships
+deviceconfig }o-- sensor
+
+'sensor relationships
+sensor --|| home
+sensor }o-- sensorvalue
+
+'devicectrl relationships
+devicectrl --|| device
+devicectrl --o| user
+devicectrl --o| sensor
+
+@enduml

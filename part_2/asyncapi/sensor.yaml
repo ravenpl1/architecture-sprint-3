@@ -1,0 +1,81 @@
+asyncapi: 3.0.0
+info:
+  title: Smart Home Sensors MQTT API
+  version: 1.0.0
+  description: |-
+    Smart Home Sensors API позволяет удаленно управлять домашними интеллектуальными устройствами.
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0'
+defaultContentType: application/json
+servers:
+  production:
+    host: 'nats.smarthome.edu:{port}'
+    protocol: mqtt
+    description: Nats broker
+    variables:
+      port:
+        description: Защищенное соединение (TLS) доступно через порт 8883.
+        default: '1883'
+        enum:
+          - '1883'
+          - '8883'
+channels:
+  sensorMeasured:
+    address: 'smarthome/sensors/1/0/event/{sensorId}/measured'
+    messages:
+      sensorMeasured:
+        $ref: '#/components/messages/sensorMeasured'
+    description: Топик для измеренных значений.
+    parameters:
+      sensorId:
+        $ref: '#/components/parameters/sensorId'
+operations:
+  receiveSensorMeasurement:
+    action: receive
+    channel:
+      $ref: '#/channels/sensorMeasured'
+    summary: Информирование об измерении конкретного датчика.
+    traits:
+      - $ref: '#/components/operationTraits/mqtt'
+    messages:
+      - $ref: '#/channels/sensorMeasured/messages/sensorMeasured'
+components:
+  messages:
+    sensorMeasured:
+      name: sensorMeasured
+      title: Измерение датчика
+      summary: Информирование об измерении конкретного датчика.
+      contentType: application/json
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: '#/components/schemas/sensorMeasuredPayload'
+  schemas:
+    sensorMeasuredPayload:
+      type: object
+      properties:
+        value:
+          type: integer
+          description: Значение датчика.
+        sentAt:
+          $ref: '#/components/schemas/sentAt'
+    sentAt:
+      type: string
+      format: date-time
+      description: Дата и время отправки сообщения.
+  parameters:
+    sensorId:
+      description: Id датчика.
+  messageTraits:
+    commonHeaders:
+      headers:
+        type: object
+        properties:
+          smart-home-sensor-id:
+            type: integer
+  operationTraits:
+    mqtt:
+      bindings:
+        mqtt:
+          qos: 1

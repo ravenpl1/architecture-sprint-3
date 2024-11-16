@@ -1,0 +1,63 @@
+@startuml
+
+left to right direction
+
+rectangle Application{
+  class DeviceControlControllers {
+    +do()
+  }
+  class DeviceControlServices {
+    +business()
+  }
+  class DeviceControlRepositories {
+    +create()
+    +read()
+    +update()
+    +saveChanges()
+  }
+  class DomainNotification {
+    +Notification()
+  }
+
+  DeviceControlControllers "1" -- "1" DeviceControlServices : includes
+  DeviceControlServices "1" -- "1" DomainNotification : includes
+  DeviceControlServices "1" -- "1" DeviceControlRepositories : includes
+
+}
+
+rectangle CQRS1 {
+  package "Commands" {
+    class SetStateDeviceCommand {
+      +execute()
+    }
+    class SetConfigurationDeviceCommand {
+      +execute()
+    }
+  }
+
+  package "Queries" {
+    class GetStateDeviceQuery {
+      +execute()
+    }
+    class GetConfigurationDeviceQuery {
+      +execute()
+    }
+    class GetConfigurationDeviceManagerQuery {
+      +execute()
+    }
+  }
+
+  class DeviceControl {
+    +handleCommand()
+    +handleQuery()
+  }
+
+  DeviceControl --> SetStateDeviceCommand : handles
+  DeviceControl --> SetConfigurationDeviceCommand : handles
+  DeviceControl --> GetStateDeviceQuery : handles
+  DeviceControl --> GetConfigurationDeviceQuery : handles
+  DeviceControl --> GetConfigurationDeviceManagerQuery : handles
+}
+
+
+@enduml
