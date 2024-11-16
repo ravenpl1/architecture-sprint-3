@@ -1,0 +1,75 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Smart Home DeviceControl Microservice API
+paths:
+ /api/v1/devices/control/{device_id}:
+    get:
+      tags:
+       - devices control
+      summary: Возвращает статус работы устройства
+      description: Возвращает статус работы устройства
+      parameters:
+        - name: device_id
+          in: path
+          description: Id устройства
+          example: 1234
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Запрос выполнен успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device_id:
+                    type: number
+                    description: Id устройства
+                  isOn:
+                    type: boolean
+                    description: True - в работе, False - остановлен
+        '404':
+          description: Страница не найдена
+        '503':
+          description: Сервер временно недоступен
+ /api/v1/devices/control:
+    post:
+      tags:
+        - devices control
+      summary: Управление работой устройства
+      description: Управление работой устройства
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_id:
+                  type: number
+                  description: Id устройства
+                  example: 1234
+                turnOn:
+                  type: boolean
+                  description: Включение устройства (True - включить, False - остановить)
+      responses:
+        '200':
+          description: Устройство успешно включено
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device_id:
+                    type: number
+                    description: Id устройства
+                  turnOn:
+                    type: boolean
+                    description: True - в работе, False - остановлен
+        '404':
+          description: Страница не найдена
+        '500':
+          description: Внутренняя ошибка сервера

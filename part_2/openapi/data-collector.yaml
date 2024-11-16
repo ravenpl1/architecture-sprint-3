@@ -1,0 +1,130 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Smart Home DataCollector Microservice API
+paths:
+ /api/v1/sensors:
+    get:
+      tags:
+       - sensors
+      summary: Возвращает список датчиков
+      description: Возвращает список датчиков
+      responses:
+        '200':
+          description: Запрос выполнен успешно
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    sensor_id:
+                      type: number
+                      description: Id датчика
+                    name:
+                      type: string
+                      description: Имя датчика
+                      example: temperature-room-1
+        '404':
+          description: Страница не найдена
+        '503':
+          description: Сервер временно недоступен
+ /api/v1/sensors/{sensor_id}/timestamp:
+    get:
+      tags:
+       - sensors
+      summary: Получить данные временного ряда по датчику на конкретное времени
+      description: Получить данные временного ряда по датчику на конкретное времени
+      parameters:
+        - name: sensor_id
+          in: path
+          description: Id датчика
+          example: 1234
+          required: true
+          schema:
+            type: number
+        - name: timestamp
+          in: path
+          description: Метка времени
+          example: 2024-11-15T00:30:26.062Z
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Запрос выполнен успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sensor_id:
+                    type: number
+                    description: Id датчика
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: Метка времени
+                  quality:
+                    type: string
+                    description: Качество данных (good/bad)
+        '404':
+          description: Страница не найдена
+        '503':
+          description: Сервер временно недоступен
+ /api/v1/sensors/{sensor_id}/timerange:
+    get:
+      tags:
+       - sensors
+      summary: Получить данные временного ряда по датчику по интервалу времени
+      description: Получить данные временного ряда по датчику по интервалу времени
+      parameters:
+        - name: sensor_id
+          in: path
+          description: Id датчика
+          example: 1234
+          required: true
+          schema:
+            type: number
+        - name: time_start
+          in: path
+          description: Начало интервала
+          example: 2024-11-15T00:30:26.062Z
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: time_end
+          in: path
+          description: Конец интервала
+          example: 2024-11-15T01:45:26.062Z
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Запрос выполнен успешно
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    sensor_id:
+                      type: number
+                      description: Id датчика
+                    timestamp:
+                      type: string
+                      format: date-time
+                      description: Метка времени
+                    quality:
+                      type: string
+                      description: Качество данных (good/bad)
+        '404':
+          description: Страница не найдена
+        '503':
+          description: Сервер временно недоступен

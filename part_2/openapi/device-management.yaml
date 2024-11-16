@@ -1,0 +1,110 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Smart Home DeviceManagement Microservice API
+paths:
+ /api/v1/devices:
+    get:
+      tags:
+       - devices
+      summary: Возвращает список устройств
+      description: Возвращает список устройств
+      responses:
+        '200':
+          description: Запрос выполнен успешно
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    device_id:
+                      type: number
+                      description: Id устройства
+                      example: 1234
+                    name:
+                      type: string
+                      description: Имя устройства
+                      example: temperature-room-1
+        '404':
+          description: Страница не найдена
+        '503':
+          description: Сервер временно недоступен
+    post:
+      tags:
+        - devices
+      summary: Создать новое устройство
+      description: Создать новое устройство
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Имя устройства
+                  example: temperature-room-1
+                configuration:
+                  type: object
+                  description: Конфигурация устройства
+                  example: {ip-addr: "192.168.1.1", sensors: [temperature-room-1], expressionForTurnOn: "sensor1 > 25"}
+      responses:
+        '200':
+          description: Устройство успешно создано
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device_id:
+                    type: number
+                    description: Id устройства
+                  name:
+                    type: string
+                    description: Имя устройства
+                  configuration:
+                    type: object
+                    description: Конфигурация устройства
+        '404':
+          description: Страница не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+ /api/v1/devices/{device_id}:
+    get:
+      tags:
+       - devices
+      summary: Возвращает подробную информаци об устройстве по Id-устройства
+      description: Возвращает подробную информаци об устройстве по Id-устройства
+      parameters:
+        - name: device_id
+          in: path
+          description: Id устройства
+          example: 1234
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Запрос выполнен успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device_id:
+                    type: number
+                    description: Id устройства
+                  name:
+                    type: string
+                    description: Имя устройства
+                  configuration:
+                    type: object
+                    description: Конфигурация устройства
+                    example: {ip-addr: "192.168.1.1", sensors: [temperature-room-1], expressionForTurnOn: "sensor1 > 25"}
+        '404':
+          description: Страница не найдена
+        '503':
+          description: Сервер временно недоступен
